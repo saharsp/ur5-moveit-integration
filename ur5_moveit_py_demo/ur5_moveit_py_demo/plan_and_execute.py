@@ -29,52 +29,58 @@ def main():
     # emits the flat 'planning_pipelines' key that move_group's own loader
     # expects).
     moveit_config["planning_pipelines"] = {"pipeline_names": ["ompl"]}
+    moveit_config["use_sim_time"] = True
     moveit_config["plan_request_params"] = {
-    "planning_pipeline": "ompl",
-    "planner_id": "RRTConnectkConfigDefault",
-    "planning_time": 5.0,
-    "planning_attempts": 10,
-    "max_velocity_scaling_factor": 0.1,
-    "max_acceleration_scaling_factor": 0.1,
+        "planning_pipeline": "ompl",
+        "planner_id": "RRTConnectkConfigDefault",
+        "planning_time": 5.0,
+        "planning_attempts": 10,
+        "max_velocity_scaling_factor": 0.1,
+        "max_acceleration_scaling_factor": 0.1,
     }
-    
+
     import yaml
     with open("/tmp/moveit_py_config_dump.yaml", "w") as f:
         yaml.safe_dump(moveit_config, f)
     logger.info(f"planning_pipelines value: {moveit_config.get('planning_pipelines')}")
 
-
     ur5 = MoveItPy(node_name="ur5_moveit_py_demo", config_dict=moveit_config)
     arm = ur5.get_planning_component("ur5_arm")
 
     logger.info("Setting start state to current state")
-    
-    def plan_and_execute_to(ur5, arm, logger, x, y, z):
-        arm.set_start_state_to_current_state()
+
+    def plan_and_execute_to(ur5, arm, logger, x, y, z, max_retries=5):
         goal_pose = PoseStamped()
         goal_pose.header.frame_id = "base_link"
         goal_pose.pose.orientation.w = 1.0
         goal_pose.pose.position.x = x
         goal_pose.pose.position.y = y
         goal_pose.pose.position.z = z
-        arm.set_goal_state(pose_stamped_msg=goal_pose, pose_link="tool0")
 
-        plan_result = arm.plan()
-        if not plan_result:
-            logger.error(f"Planning failed for ({x}, {y}, {z})")
-            return None
+        for attempt in range(1, max_retries + 1):
+            arm.set_start_state_to_current_state()
+            arm.set_goal_state(pose_stamped_msg=goal_pose, pose_link="tool0")
 
-        trajectory = plan_result.trajectory
-        ur5.execute(trajectory, controllers=[])
-        time.sleep(1.0)
-        return trajectory.get_robot_trajectory_msg()
- 
+            logger.info(f"Planning attempt {attempt}/{max_retries} for ({x}, {y}, {z})")
+            plan_result = arm.plan()
+            if plan_result:
+                logger.info(f"Planning succeeded on attempt {attempt}")
+                trajectory = plan_result.trajectory
+                result = ur5.execute(trajectory, controllers=[])
+                logger.info(f"Execute result: {result}, status={getattr(result, 'status', None)}, val={getattr(result, 'val', None)}")
+                time.sleep(1.0)
+                return trajectory.get_robot_trajectory_msg()
+            else:
+                logger.warn(f"Planning attempt {attempt} failed for ({x}, {y}, {z})")
 
-    traj_msg = plan_and_execute_to(ur5, arm, logger, 0.4, 0.1, 0.3)
+        logger.error(f"All {max_retries} planning attempts failed for ({x}, {y}, {z})")
+        return None
+
+    traj_msg = plan_and_execute_to(ur5, arm, logger, 0.5, 0.2, 0.5)
     if traj_msg:
         for i, point in enumerate(traj_msg.joint_trajectory.points):
             logger.info(f"Waypoint {i}: {list(point.positions)}")
-            
+
     logger.info("Done.")
     os._exit(0)
 

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur5">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import ur5 urdf file (Gazebo copy, with inertials + world anchor added) -->
+    <xacro:include filename="$(find ur5_gazebo_sim)/urdf/ur5_gazebo.urdf" />
+
+    <!-- Import Gazebo-flavored control_xacro -->
+    <xacro:include filename="$(find ur5_gazebo_sim)/config/ur5_gazebo.ros2_control.xacro" />
+
+    <xacro:ur5_ros2_control name="GazeboSystem" initial_positions_file="$(arg initial_positions_file)"/>
+
+    <!-- gz_ros2_control plugin: tells Gazebo to load ros2_control for this model -->
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find ur5_gazebo_sim)/config/ur5_gazebo_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+</robot>

@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<!--
+  ur5_moveit.urdf - MoveIt-only duplicate of robot_ik_pickplace/urdf/ur5.urdf.
+  Visual/joint geometry is identical to the original; only the <collision>
+  cylinders are shrunk (roughly half radius, ~10% shorter) to better match
+  a real UR5's slimmer physical envelope, since the original's thicker
+  collision cylinders register false self-collisions during planning that
+  a real arm would clear fine. Nothing in robot_ik_pickplace or
+  ur5_gazebo_sim is touched by this file.
+-->
+<robot name="ur5">
+
+  <material name="grey"><color rgba="0.6 0.6 0.6 1.0"/></material>
+  <material name="blue"><color rgba="0.2 0.4 0.8 1.0"/></material>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.08" length="0.06"/></geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.04" length="0.05"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="shoulder_pan_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="shoulder_link">
+    <visual>
+      <origin xyz="0 0 0.0445795" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.045" length="0.089159"/></geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.0445795" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.0225" length="0.0802"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="shoulder_lift_joint" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 0.089159" rpy="1.5707963 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="upper_arm_link">
+    <visual>
+      <origin xyz="-0.2125 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.04" length="0.425"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.2125 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.02" length="0.3825"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="elbow_joint" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="-0.425 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="forearm_link">
+    <visual>
+      <origin xyz="-0.196125 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.035" length="0.39225"/></geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.196125 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.0175" length="0.353"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="wrist_1_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_1_link"/>
+    <origin xyz="-0.39225 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="wrist_1_link">
+    <visual>
+      <origin xyz="0 0 0.054575" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.03" length="0.10915"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.054575" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.015" length="0.0982"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="wrist_2_joint" type="revolute">
+    <parent link="wrist_1_link"/>
+    <child link="wrist_2_link"/>
+    <origin xyz="0 0 0.10915" rpy="1.5707963 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="wrist_2_link">
+    <visual>
+      <origin xyz="0 0 0.047325" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.027" length="0.09465"/></geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.047325" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.0135" length="0.0852"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="wrist_3_joint" type="revolute">
+    <parent link="wrist_2_link"/>
+    <child link="wrist_3_link"/>
+    <origin xyz="0 0 0.09465" rpy="-1.5707963 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.2831853" upper="6.2831853" effort="50" velocity="3.1415927"/>
+  </joint>
+
+  <link name="wrist_3_link">
+    <visual>
+      <origin xyz="0 0 0.04115" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.03" length="0.0823"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.04115" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.015" length="0.0741"/></geometry>
+    </collision>
+  </link>
+
+  <joint name="wrist_3-tool0_fixed_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="tool0"/>
+    <origin xyz="0 0 0.0823" rpy="0 0 0"/>
+  </joint>
+
+  <link name="tool0"/>
+
+</robot>
