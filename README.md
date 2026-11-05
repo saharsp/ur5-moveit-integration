@@ -89,6 +89,13 @@ simulation accuracy or the original IK package.
 
 ## Known configuration notes / gotchas
 
+- **Flaky `qos_overrides./clock.subscription.*` crash under CPU load**: On
+  resource-constrained VMs (e.g. 2 cores), Gazebo's GUI + physics server can
+  consume nearly all available CPU, occasionally causing `rclcpp` to crash
+  with `InvalidParameterValueException` on a `/clock` subscription QoS
+  parameter during MoveItPy startup. This is a timing race under
+  contention, not a code bug -- simply retry the command.
+
 - **`position_proportional_gain`**: `gz_ros2_control`'s `GazeboSimSystem`
   converts `position` command interfaces into joint torque via an internal
   P-controller. This must be set explicitly per `<hardware>` block in
