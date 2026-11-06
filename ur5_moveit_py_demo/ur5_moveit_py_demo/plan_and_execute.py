@@ -76,7 +76,7 @@ def main():
         logger.error(f"All {max_retries} planning attempts failed for ({x}, {y}, {z})")
         return None
 
-    traj_msg = plan_and_execute_to(ur5, arm, logger, 0.5, 0.2, 0.5)
+    traj_msg = plan_and_execute_to(ur5, arm, logger, 0.4, 0.1, 0.3)
     if traj_msg:
         for i, point in enumerate(traj_msg.joint_trajectory.points):
             logger.info(f"Waypoint {i}: {list(point.positions)}")
