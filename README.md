@@ -132,3 +132,7 @@ limit.
 
 Sahar Samanipour — built as a portfolio project translating industrial
 ABB/KUKA robotics experience into ROS2/MoveIt2.
+
+## Known Issues
+
+- **Flaky `qos_overrides./clock.subscription.depth` crash under CPU load**: On resource-constrained VMs (e.g. 2 vCPUs) with Gazebo's GUI and physics running, MoveItPy/MoveItCpp can occasionally fail to start with an `rclcpp::exceptions::InvalidParameterValueException` related to `qos_overrides./clock.subscription.depth`. This is a known timing/CPU-contention issue on constrained hardware, not a bug in this project -- simply retry the launch.
