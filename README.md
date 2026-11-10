@@ -118,7 +118,7 @@ simulation accuracy or the original IK package.
   (e.g. VM suspend/resume), leftover background processes can cause
   "Controller already loaded" errors on the next launch. Clean up with:
   ```bash
-  pkill -9 -f "ros2 launch"; pkill -9 -f "gz sim"; pkill -9 -f controller_manager; pkill -9 -f robot_state_publisher; pkill -9 -f parameter_bridge; pkill -9 -f spawner
+  pkill -9 -f "ros2 launch"; pkill -9 -f "gz sim"; pkill -9 -f controller_manager; pkill -9 -f robot_state_publisher; pkill -9 -f parameter_bridge; pkill -9 -f spawner; pkill -9 -f move_group; pkill -9 -f rviz2
   ros2 daemon stop && ros2 daemon start
   ```
 
@@ -136,3 +136,7 @@ ABB/KUKA robotics experience into ROS2/MoveIt2.
 ## Known Issues
 
 - **Flaky `qos_overrides./clock.subscription.depth` crash under CPU load**: On resource-constrained VMs (e.g. 2 vCPUs) with Gazebo's GUI and physics running, MoveItPy/MoveItCpp can occasionally fail to start with an `rclcpp::exceptions::InvalidParameterValueException` related to `qos_overrides./clock.subscription.depth`. This is a known timing/CPU-contention issue on constrained hardware, not a bug in this project -- simply retry the launch.
+
+- **Orphaned background processes after closing terminals**: Closing a terminal tab does not reliably kill the full process tree started by `ros2 launch` -- Gazebo's `gz sim server`/`gz sim gui`, `ros_gz_bridge/parameter_bridge`, `move_group`, and `rviz2` can all survive as orphans. A leftover `parameter_bridge` or `gz sim server` from a previous session running alongside a new one causes duplicate `/clock` publishers, which shows up as continuous `tf2_buffer: Detected jump back in time` warnings and RViz never rendering the robot. If you see this, check for duplicates with `ps aux | grep -E "gz |gz-|move_group|rviz2|ros2 launch|parameter_bridge"` and kill any stale PIDs before relaunching (see "Stale processes" above for the full cleanup command).
+
+- **Running Gazebo's GUI and RViz's GUI at the same time can overload a constrained VM**: on a 2-vCPU VM, running Gazebo's 3D GUI, RViz's 3D GUI, physics, and `move_group` planning all at once can push CPU load far past capacity (observed `load average` over 13 on a 2-core machine), causing RViz to become fully unresponsive and the simulated clock to appear to jump backward. If this happens, close unrelated apps on the host, increase the VM's vCPU allocation if the host has spare cores, or avoid running both GUIs at once if you don't need to.
